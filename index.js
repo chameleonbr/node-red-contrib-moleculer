@@ -165,7 +165,9 @@ module.exports = function (RED) {
                 node.status({})
                 node.send(msg)
             } catch (e) {
+                node.status({ fill: 'red', shape: 'ring', text: 'Error' })
                 node.error(e)
+                setTimeout(()=>{node.status({})},2000)
             }
         })
     }
