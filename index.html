@@ -1,0 +1,373 @@
+<script type="text/javascript">
+    "use strict";
+    /*global RED*/
+    RED.nodes.registerType('moleculer-config', {
+        category: 'config',
+        defaults: {
+            name: {
+                value: "",
+                required: true
+            },
+            options: {
+                value: "{}",
+                validate: RED.validators.typedInput("optionsType"),
+                required: true
+            }
+        },
+        label: function () {
+            return this.name || 'Config'
+        },
+        oneditprepare: function () {
+            $("#node-config-input-options").typedInput({
+                default: 'json',
+                typeField: $("#node-config-input-optionsType"),
+                types: ['flow', 'global', 'json', 'env']
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-globe"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-options"><i class="fa fa-server"></i> Options</label>
+        <input type="text" id="node-config-input-options">
+        <input type="hidden" id="node-config-input-optionsType">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-config">
+    <p>Moleculer Config</p>
+    <p>...</p>
+</script>
+
+<script type="text/javascript">
+    "use strict";
+    /*global RED*/
+    RED.nodes.registerType('moleculer-service-config', {
+        category: 'config',
+        defaults: {
+            name: {
+                value: "",
+                required: true
+            },
+            version: {
+                value: "",
+                required: false
+            },
+            settings: {
+                value: "{}",
+                validate: RED.validators.typedInput("settingsType"),
+                required: false
+            }
+        },
+        label: function () {
+            return (this.version !== "") ? (this.version + '.' + this.name) : (this.name)
+        },
+        oneditprepare: function () {
+            $("#node-config-input-settings").typedInput({
+                default: 'json',
+                typeField: $("#node-config-input-settingsType"),
+                types: ['flow', 'global', 'json', 'env']
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-service-config">
+<div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-globe"></i> Name</label>
+    <input type="text" id="node-config-input-name">
+</div>
+<div class="form-row">
+    <label for="node-config-input-version"><i class="fa fa-globe"></i> Version</label>
+    <input type="text" id="node-config-input-version">
+</div>
+<div class="form-row">
+    <label for="node-config-input-settings"><i class="fa fa-server"></i> Settings</label>
+    <input type="text" id="node-config-input-settings">
+    <input type="hidden" id="node-config-input-settingsType">
+</div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-service-config">
+<p>Moleculer Service Config</p>
+<p>...</p>
+</script>
+
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-event', {
+        category: 'Moleculer',
+        outputs: 1,
+        color: "#ffaaaa",
+        icon: "redis.png",
+        paletteLabel: "event",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            service: {
+                value: "",
+                type: "moleculer-service-config"
+            },
+            name: {
+                value: ""
+            },
+            topic: {
+                value: ""
+            },
+            group: {
+                value: ""
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "Event";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-event">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"><i class="fa fa-globe"></i> Service</label>
+        <input type="text" id="node-input-service" placeholder="Service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tasks"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-group"><i class="icon-tasks"></i> Group</label>
+        <input type="text" id="node-input-group" placeholder="Group">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-event">
+    <p>Moleculer Event</p>
+    <p>...</p>
+</script>
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-emit', {
+        category: 'Moleculer',
+        outputs: 0,
+        inputs: 1,
+        color: "#ffaaaa",
+        icon: "redis.png",
+        paletteLabel: "emit",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            name: {
+                value: ""
+            },
+            topic: {
+                value: ""
+            },
+            group: {
+                value: ""
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "Emit";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-emit">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tasks"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-group"><i class="icon-tasks"></i> Group</label>
+        <input type="text" id="node-input-group" placeholder="Group">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-emit">
+    <p>Moleculer Emit</p>
+    <p>...</p>
+</script>
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-call', {
+        category: 'Moleculer',
+        outputs: 1,
+        inputs: 1,
+        color: "#ffaaaa",
+        icon: "redis.png",
+        paletteLabel: "call",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            name: {
+                value: ""
+            },
+            topic: {
+                value: ""
+            },
+            settings: {
+                value: "{}",
+                validate: RED.validators.typedInput("settingsType"),
+                required: false
+            },
+            oneditprepare: function () {
+                $("#node-input-settings").typedInput({
+                    default: 'json',
+                    typeField: $("#node-input-settingsType"),
+                    types: ['flow', 'global', 'json', 'env']
+                });
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "Call";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-call">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tasks"></i> Action</label>
+        <input type="text" id="node-input-topic" placeholder="Action">
+    </div>
+    <div class="form-row">
+        <label for="node-input-settings"><i class="fa fa-server"></i> Settings</label>
+        <input type="text" id="node-input-settings">
+        <input type="hidden" id="node-input-settingsType">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-call">
+    <p>Moleculer Call</p>
+    <p>...</p>
+</script>
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-request-action', {
+        category: 'Moleculer',
+        outputs: 1,
+        inputs: 0,
+        color: "#ffaaaa",
+        icon: "redis.png",
+        paletteLabel: "request",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            service: {
+                value: "",
+                type: "moleculer-service-config"
+            },
+            name: {
+                value: ""
+            },
+            topic: {
+                value: "",
+                required: true
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "Request";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-request-action">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"><i class="fa fa-globe"></i> Service</label>
+        <input type="text" id="node-input-service" placeholder="Service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tasks"></i> Action</label>
+        <input type="text" id="node-input-topic" placeholder="Action">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-request-action">
+    <p>Moleculer Request</p>
+    <p>...</p>
+</script>
+
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-response-action', {
+        category: 'Moleculer',
+        outputs: 0,
+        inputs: 1,
+        color: "#ffaaaa",
+        icon: "redis.png",
+        paletteLabel: "response",
+        defaults: {
+            name: {
+                value: ""
+            }
+        },
+        label: function () {
+            return this.name || "Response";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-response-action">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-response-action">
+    <p>Moleculer Response</p>
+    <p>...</p>
+</script>
