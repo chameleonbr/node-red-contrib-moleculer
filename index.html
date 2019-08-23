@@ -237,15 +237,15 @@
             topic: {
                 value: ""
             },
-            settings: {
+            options: {
                 value: "{}",
-                validate: RED.validators.typedInput("settingsType"),
+                validate: RED.validators.typedInput("optionsType"),
                 required: false
             },
             oneditprepare: function () {
-                $("#node-input-settings").typedInput({
+                $("#node-input-options").typedInput({
                     default: 'json',
-                    typeField: $("#node-input-settingsType"),
+                    typeField: $("#node-input-optionsType"),
                     types: ['flow', 'global', 'json', 'env']
                 });
             }
@@ -270,9 +270,9 @@
         <input type="text" id="node-input-topic" placeholder="Action">
     </div>
     <div class="form-row">
-        <label for="node-input-settings"><i class="fa fa-server"></i> Settings</label>
-        <input type="text" id="node-input-settings">
-        <input type="hidden" id="node-input-settingsType">
+        <label for="node-input-options"><i class="fa fa-server"></i> Options</label>
+        <input type="text" id="node-input-options">
+        <input type="hidden" id="node-input-optionsType">
     </div>
 </script>
 
