@@ -2,7 +2,6 @@ module.exports = function (RED) {
     "use strict";
     const { ServiceBroker } = require('moleculer')
     let brokers = {}
-    console.log('Componentes')
     //console.log(RED);
     /*
         'type-registered': [Function],
@@ -23,12 +22,7 @@ module.exports = function (RED) {
     })
 
     RED.events.on('nodes-started', async (event) => {
-        RED.log.info('Deploy Moleculer')
         if (brokers !== {}) {
-            console.log(brokers)
-            /*for (let prop in brokers) {
-                brokers[prop]['broker'].close()
-            }*/
             for (let i in brokers) {
                 brokers[i]['broker'] = new ServiceBroker(JSON.parse(brokers[i]['options']))
                 for (let j in brokers[i]['services']) {
@@ -51,7 +45,6 @@ module.exports = function (RED) {
 
     function MoleculerConfig(n) {
         RED.nodes.createNode(this, n);
-        console.log('nodenode', this)
         this.name = n.name;
         this.options = n.options;
         let node = this
@@ -76,7 +69,6 @@ module.exports = function (RED) {
 
     function event(n) {
         RED.nodes.createNode(this, n);
-        console.log('Compon')
         this.broker = RED.nodes.getNode(n.broker);
         this.service = RED.nodes.getNode(n.service);
         this.name = n.name;
@@ -168,7 +160,7 @@ module.exports = function (RED) {
         node.on('input', async (msg) => {
             try {
                 node.status({ fill: 'blue', shape: 'dot', text: 'Requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, node.options)
+                let res = await broker['broker'].call(node.topic, msg.payload, (!!node.options)?(JSON.parse(node.options)):({}))
                 msg.payload = res
                 node.status({})
                 node.send(msg)
@@ -182,14 +174,18 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         let serviceName = node.service.version + '.' + node.service.name
         if (!broker['services'].hasOwnProperty(serviceName)) {
-            broker['services'][serviceName] = { name: node.service.name, version: node.service.version, settings: node.service.settings }
+            broker['services'][serviceName] = { 
+                name: node.service.name, 
+                version: node.service.version, 
+                settings: node.service.settings 
+            }
         }
         if (!broker['services'][serviceName].hasOwnProperty('actions')) {
             broker['services'][serviceName]['actions'] = {}
         }
         broker['services'][serviceName]['actions'][node.topic] = (ctx) => {
             return new Promise((resolve, reject) => {
-                let msg = { topic: node.topic, ctx, payload: ctx.params, response: { resolve, reject } }
+                let msg = { topic: node.topic, ctx, payload: ctx.params, _res: { resolve, reject } }
                 node.send(msg)
             })
         }
@@ -197,15 +193,12 @@ module.exports = function (RED) {
 
     function responseAction(node) {
         node.on('input', (msg) => {
-            if (msg.response !== undefined) {
-                msg.response.resolve(msg.payload)
+            if (msg._res !== undefined) {
+                msg._res.resolve(msg.payload)
             } else {
                 node.error('Request Action required')
             }
         })
-        /*node.on('error', (msg) => {
-            msg.response.reject(msg)
-        })*/
     }
 
 };
