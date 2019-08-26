@@ -105,8 +105,8 @@
     RED.nodes.registerType('moleculer-event', {
         category: 'Moleculer',
         outputs: 1,
-        color: "#ffaaaa",
-        icon: "redis.png",
+        color: "#ffffff",
+        icon: "moleculer_big.png",
         paletteLabel: "event",
         defaults: {
             broker: {
@@ -168,8 +168,8 @@
         category: 'Moleculer',
         outputs: 0,
         inputs: 1,
-        color: "#ffaaaa",
-        icon: "redis.png",
+        color: "#ffffff",
+        icon: "moleculer_big.png",
         paletteLabel: "emit",
         defaults: {
             broker: {
@@ -182,12 +182,15 @@
             topic: {
                 value: ""
             },
+            broadcast: {
+                value: false
+            },
             group: {
                 value: ""
             }
         },
         label: function () {
-            return this.name || this.topic || "Emit";
+            return this.name || this.topic || ((this.broadcast)?('Broadcast'):('Emit'));
         }
     });
 </script>
@@ -204,6 +207,10 @@
     <div class="form-row">
         <label for="node-input-topic"><i class="icon-tasks"></i> Topic</label>
         <input type="text" id="node-input-topic" placeholder="Topic">
+    </div>
+    <div class="form-row" id="node-broadcast">
+        <label for="node-input-broadcast">&nbsp;</label>
+        <input type="checkbox" id="node-input-broadcast" style="display:inline-block; width:15px; vertical-align:baseline;"> Broadcast
     </div>
     <div class="form-row">
         <label for="node-input-group"><i class="icon-tasks"></i> Group</label>
@@ -223,8 +230,8 @@
         category: 'Moleculer',
         outputs: 1,
         inputs: 1,
-        color: "#ffaaaa",
-        icon: "redis.png",
+        color: "#ffffff",
+        icon: "moleculer_big.png",
         paletteLabel: "call",
         defaults: {
             broker: {
@@ -247,12 +254,12 @@
             return this.name || this.topic || "Call";
         },
         oneditprepare: function () {
-                $("#node-input-options").typedInput({
-                    default: 'json',
-                    typeField: $("#node-input-optionsType"),
-                    types: ['flow', 'global', 'json', 'env']
-                });
-            }
+            $("#node-input-options").typedInput({
+                default: 'json',
+                typeField: $("#node-input-optionsType"),
+                types: ['flow', 'global', 'json', 'env']
+            });
+        }
     });
 </script>
 
@@ -288,8 +295,8 @@
         category: 'Moleculer',
         outputs: 1,
         inputs: 0,
-        color: "#ffaaaa",
-        icon: "redis.png",
+        color: "#ffffff",
+        icon: "moleculer_big.png",
         paletteLabel: "request",
         defaults: {
             broker: {
@@ -346,8 +353,8 @@
         category: 'Moleculer',
         outputs: 0,
         inputs: 1,
-        color: "#ffaaaa",
-        icon: "redis.png",
+        color: "#ffffff",
+        icon: "moleculer_big.png",
         paletteLabel: "response",
         defaults: {
             name: {
