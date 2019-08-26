@@ -34,7 +34,6 @@ module.exports = function (RED) {
                     if (brokers[i]['services'][j]['version'] !== "") {
                         service['version'] = brokers[i]['services'][j]['version']
                     }
-                    console.log(service)
                     brokers[i]['broker'].createService(service);
                 }
                 await brokers[i]['broker'].start()
@@ -47,6 +46,7 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, n);
         this.name = n.name;
         this.options = n.options;
+        this.optionsType = n.optionsType;
         let node = this
         node.on('close', (done) => {
             done()
@@ -59,7 +59,9 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, n);
         this.name = n.name;
         this.version = n.version;
+        this.settingsType = n.settingsType;
         this.settings = n.settings;
+
         let node = this
         node.on('close', (done) => {
             done()
@@ -96,6 +98,7 @@ module.exports = function (RED) {
         this.name = n.name;
         this.topic = n.topic;
         this.options = n.options;
+        this.optionsType = n.optionsType;
         var node = this
         createCall(node);
     }
@@ -125,7 +128,7 @@ module.exports = function (RED) {
         if (brokers[config.name] !== undefined) {
             return brokers[config.name]
         } else {
-            brokers[config.name] = { broker: null, services: {}, options: config.options }
+            brokers[config.name] = { broker: null, services: {}, options: RED.util.evaluateNodeProperty(config.options,config.optionsType, config) }
             return brokers[config.name]
         }
     }
@@ -135,7 +138,7 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         let serviceName = node.service.version + '.' + node.service.name
         if (!broker['services'].hasOwnProperty(serviceName)) {
-            broker['services'][serviceName] = { name: node.service.name, version: node.service.version, settings: node.service.settings }
+            broker['services'][serviceName] = { name: node.service.name, version: node.service.version, settings: RED.util.evaluateNodeProperty(config.settings,config.settingsType, node) }
         }
         if (!broker['services'][serviceName].hasOwnProperty('events')) {
             broker['services'][serviceName]['events'] = {}
@@ -160,7 +163,7 @@ module.exports = function (RED) {
         node.on('input', async (msg) => {
             try {
                 node.status({ fill: 'blue', shape: 'dot', text: 'Requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, (!!node.options)?(JSON.parse(node.options)):({}))
+                let res = await broker['broker'].call(node.topic, msg.payload, RED.util.evaluateNodeProperty(config.options,config.optionsType, node, msg))
                 msg.payload = res
                 node.status({})
                 node.send(msg)
@@ -187,7 +190,8 @@ module.exports = function (RED) {
         }
         broker['services'][serviceName]['actions'][node.topic] = (ctx) => {
             return new Promise((resolve, reject) => {
-                let msg = { topic: node.topic, ctx, payload: ctx.params, _res: { resolve, reject } }
+                console.log('call')
+                let msg = { topic: node.topic, payload: ctx.params, _res: { resolve, reject } }
                 node.send(msg)
             })
         }

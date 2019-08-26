@@ -241,18 +241,18 @@
                 value: "{}",
                 validate: RED.validators.typedInput("optionsType"),
                 required: false
-            },
-            oneditprepare: function () {
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "Call";
+        },
+        oneditprepare: function () {
                 $("#node-input-options").typedInput({
                     default: 'json',
                     typeField: $("#node-input-optionsType"),
                     types: ['flow', 'global', 'json', 'env']
                 });
             }
-        },
-        label: function () {
-            return this.name || this.topic || "Call";
-        }
     });
 </script>
 
