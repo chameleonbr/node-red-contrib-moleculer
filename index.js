@@ -138,7 +138,11 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         let serviceName = node.service.version + '.' + node.service.name
         if (!broker['services'].hasOwnProperty(serviceName)) {
-            broker['services'][serviceName] = { name: node.service.name, version: node.service.version, settings: RED.util.evaluateNodeProperty(config.settings,config.settingsType, node) }
+            broker['services'][serviceName] = { 
+                name: node.service.name, 
+                version: node.service.version, 
+                settings: RED.util.evaluateNodeProperty(node.service.settings,node.service.settingsType, node) 
+            }
         }
         if (!broker['services'][serviceName].hasOwnProperty('events')) {
             broker['services'][serviceName]['events'] = {}
@@ -163,7 +167,7 @@ module.exports = function (RED) {
         node.on('input', async (msg) => {
             try {
                 node.status({ fill: 'blue', shape: 'dot', text: 'Requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, RED.util.evaluateNodeProperty(config.options,config.optionsType, node, msg))
+                let res = await broker['broker'].call(node.topic, msg.payload, RED.util.evaluateNodeProperty(node.options,node.optionsType, node, msg))
                 msg.payload = res
                 node.status({})
                 node.send(msg)
@@ -182,7 +186,7 @@ module.exports = function (RED) {
             broker['services'][serviceName] = { 
                 name: node.service.name, 
                 version: node.service.version, 
-                settings: node.service.settings 
+                settings: RED.util.evaluateNodeProperty(node.service.settings,node.service.settingsType, node) 
             }
         }
         if (!broker['services'][serviceName].hasOwnProperty('actions')) {
