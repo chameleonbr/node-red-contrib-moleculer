@@ -256,6 +256,8 @@ module.exports = function (RED) {
         }
         broker['services'][serviceName]['actions'][node.topic] = (ctx) => {
             return new Promise((resolve, reject) => {
+                node.status({ fill: 'blue', shape: 'dot', text: 'receiving request...' })
+                setTimeout(() => { node.status({}) }, 500)
                 let msg = { topic: node.topic, payload: ctx.params, _res: { resolve, reject } }
                 node.send(msg)
             })
@@ -264,10 +266,12 @@ module.exports = function (RED) {
 
     function responseAction(node) {
         node.on('input', (msg) => {
+            node.status({ fill: 'blue', shape: 'dot', text: 'sending response...' })
+            setTimeout(() => { node.status({}) }, 500)
             if (msg._res !== undefined) {
                 msg._res.resolve(msg.payload)
             } else {
-                node.error('Request Action required')
+                node.error('Request Action required', msg)
             }
         })
     }
