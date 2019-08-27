@@ -207,7 +207,6 @@ module.exports = function (RED) {
             try {
 
                 let action = msg.action || node.topic
-                let bcast = msg.broadcast || node.broadcast
                 let options = msg.options || {}
                 if (options === {} && node.optionsType) {
                     options = RED.util.evaluateNodeProperty(node.options, node.optionsType, node, msg)
@@ -221,9 +220,9 @@ module.exports = function (RED) {
                     }
                 }
                 node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, options)
+                let res = await broker['broker'].call(action, msg.payload, options)
                 msg.payload = res
-                node.status({})
+                setTimeout(() => { node.status({}) }, 500)
                 node.send(msg)
             } catch (e) {
                 node.status({ fill: 'red', shape: 'ring', text: 'error' })
