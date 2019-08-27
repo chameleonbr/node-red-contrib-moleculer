@@ -174,6 +174,9 @@ module.exports = function (RED) {
                 node.send(msg)
             }
         }
+        if(node.group !== ""){
+            broker['services'][serviceName]['events'][node.topic]['group'] = node.group.split(',')
+        }
     }
 
     function createEmit(node) {
@@ -257,7 +260,7 @@ module.exports = function (RED) {
             return new Promise((resolve, reject) => {
                 node.status({ fill: 'blue', shape: 'dot', text: 'receiving request...' })
                 setTimeout(() => { node.status({}) }, 500)
-                let msg = { topic: node.topic, payload: ctx.params, _res: { resolve, reject } }
+                let msg = { action: node.topic, payload: ctx.params, _res: { resolve, reject } }
                 node.send(msg)
             })
         }
