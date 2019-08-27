@@ -179,18 +179,24 @@ module.exports = function (RED) {
     function createEmit(node) {
         let broker = getBroker(node.broker)
         node.on('input', (msg) => {
+
+            let topic = msg.topic || node.topic
+            let group = msg.group || node.group
+            let bcast = msg.broadcast || node.broadcast
+
             let func = 'emit'
             let status = 'emitting...'
-            if (node.broadcast) {
+            if (bcast) {
                 func = 'broadcast'
                 status = 'broadcasting...'
             }
             let groups = null
-            if (node.group !== "") {
-                groups = node.group.split(',')
+            if (group !== "") {
+                groups = group.split(',')
             }
+
             node.status({ fill: 'blue', shape: 'dot', text: status })
-            broker['broker'][func](node.topic, msg.payload, groups)
+            broker['broker'][func](topic, msg.payload, groups)
             setTimeout(() => { node.status({}) }, 500)
         })
     }
@@ -199,18 +205,23 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         node.on('input', async (msg) => {
             try {
-                let settings = {}
-                if (node.optionsType) {
-                    settings = RED.util.evaluateNodeProperty(node.options, node.optionsType, node, msg)
+
+                let action = msg.action || node.topic
+                let bcast = msg.broadcast || node.broadcast
+                let options = msg.options || {}
+                if (options === {} && node.optionsType) {
+                    options = RED.util.evaluateNodeProperty(node.options, node.optionsType, node, msg)
                 } else {
-                    try {
-                        settings = JSON.parse(node.options)
-                    } catch (e) {
-                        settings = {}
+                    if (options === {}) {
+                        try {
+                            options = JSON.parse(node.options)
+                        } catch (e) {
+                            options = {}
+                        }
                     }
                 }
                 node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, settings)
+                let res = await broker['broker'].call(node.topic, msg.payload, options)
                 msg.payload = res
                 node.status({})
                 node.send(msg)

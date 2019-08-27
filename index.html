@@ -40,8 +40,10 @@
 </script>
 
 <script type="text/x-red" data-help-name="moleculer-config">
-    <p>Moleculer Config</p>
-    <p>...</p>
+    <p>Moleculer Broker Config</p>
+    <h3>Details</h3>
+    <p>Name: Name of broker config</p>
+    <p>Options: JSON broker config options. <a href="https://moleculer.services/docs/0.13/broker.html#Full-options-object">See more here.</a></p>
 </script>
 
 <script type="text/javascript">
@@ -95,7 +97,10 @@
 
 <script type="text/x-red" data-help-name="moleculer-service-config">
 <p>Moleculer Service Config</p>
-<p>...</p>
+<h3>Details</h3>
+    <p>Name: Name of Service</p>
+    <p>Version: Version of Service</p>
+    <p>Settings: JSON service settings. </p>
 </script>
 
 
@@ -158,7 +163,12 @@
 
 <script type="text/x-red" data-help-name="moleculer-event">
     <p>Moleculer Event</p>
-    <p>...</p>
+<h3>Details</h3>
+    <p>Broker: Name of Broker</p>
+    <p>Service: Name of Service</p>
+    <p>Name: Name of Node</p>
+    <p>Topic: Name of Topic/Event. </p>
+    <p>Group: Comma separated Groups. </p>
 </script>
 
 
@@ -190,7 +200,7 @@
             }
         },
         label: function () {
-            return this.name || this.topic || ((this.broadcast)?('Broadcast'):('Emit'));
+            return this.name || this.topic || ((this.broadcast) ? ('Broadcast') : ('Emit'));
         }
     });
 </script>
@@ -220,7 +230,12 @@
 
 <script type="text/x-red" data-help-name="moleculer-emit">
     <p>Moleculer Emit</p>
-    <p>...</p>
+    <h3>Details</h3>
+    <p>Broker: Name of Broker</p>
+    <p>Name: Name of Node</p>
+    <p>Topic: Name of Topic/Event. Overridden by msg.topic. </p>
+    <p>Broadcast: Broadcast instead emit. Overridden by msg.broadcast. </p>
+    <p>Group: groups comma separated. Overridden by msg.group. </p>
 </script>
 
 
@@ -285,7 +300,10 @@
 
 <script type="text/x-red" data-help-name="moleculer-call">
     <p>Moleculer Call</p>
-    <p>...</p>
+    <h3>Details</h3>
+    <p>Broker: Name of Broker</p>
+    <p>Action: Name of Action. Overridden by msg.action. </p>
+    <p>Options: JSON options. <a href="https://moleculer.services/docs/0.13/actions.html#Syntax">See more here</a> </p>
 </script>
 
 
@@ -342,7 +360,11 @@
 
 <script type="text/x-red" data-help-name="moleculer-request-action">
     <p>Moleculer Request</p>
-    <p>...</p>
+    <h3>Details</h3>
+    <p>Broker: Name of Broker</p>
+    <p>Service: Name of Service</p>
+    <p>Name: Name of Node. </p>
+    <p>Action: Name of Action. Overridden by msg.action. </p>
 </script>
 
 
@@ -376,5 +398,7 @@
 
 <script type="text/x-red" data-help-name="moleculer-response-action">
     <p>Moleculer Response</p>
-    <p>...</p>
+    <h3>Details</h3>
+    <p>Name: Name of Node</p>
+    <p>This node send response from the service request.</p>
 </script>
