@@ -199,8 +199,18 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         node.on('input', async (msg) => {
             try {
+                let settings = {}
+                if (node.optionsType) {
+                    settings = RED.util.evaluateNodeProperty(node.options, node.optionsType, node, msg)
+                } else {
+                    try {
+                        settings = JSON.parse(node.options)
+                    } catch (e) {
+                        settings = {}
+                    }
+                }
                 node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
-                let res = await broker['broker'].call(node.topic, msg.payload, RED.util.evaluateNodeProperty(node.options, node.optionsType, node, msg))
+                let res = await broker['broker'].call(node.topic, msg.payload, settings)
                 msg.payload = res
                 node.status({})
                 node.send(msg)
