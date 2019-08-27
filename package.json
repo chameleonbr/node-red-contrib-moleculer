@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-moleculer",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Moleculer and NodeRED integration",
   "main": "index.js",
   "scripts": {

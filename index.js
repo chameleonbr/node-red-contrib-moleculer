@@ -17,7 +17,7 @@ module.exports = function (RED) {
     // RED.events.on('nodes-started', console.log.bind(null, 'nodes'))
     RED.events.on('nodes-stopped', async (event) => {
         for (let prop in brokers) {
-            brokers[prop]['broker'].stop()
+            await brokers[prop]['broker'].stop()
         }
     })
 
@@ -59,8 +59,8 @@ module.exports = function (RED) {
         }
         brokers[node.name] = { broker: null, services: {}, options }
         brokers[node.name]['broker'] = new ServiceBroker(brokers[node.name]['options']);
-        node.on('close', (done) => {
-            brokers[node.name]['broker'].stop()
+        node.on('close', async(done) => {
+            await brokers[node.name]['broker'].stop()
             done()
         })
     }
