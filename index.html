@@ -133,7 +133,7 @@
             }
         },
         label: function () {
-            return this.name || this.topic || "Event";
+            return this.name || this.topic || "event";
         }
     });
 </script>
@@ -200,7 +200,7 @@
             }
         },
         label: function () {
-            return this.name || this.topic || ((this.broadcast) ? ('Broadcast') : ('Emit'));
+            return this.name || this.topic || ((this.broadcast) ? ('broadcast') : ('emit'));
         }
     });
 </script>
@@ -266,7 +266,7 @@
             }
         },
         label: function () {
-            return this.name || this.topic || "Call";
+            return this.name || this.topic || "call";
         },
         oneditprepare: function () {
             $("#node-input-options").typedInput({
@@ -334,7 +334,7 @@
             }
         },
         label: function () {
-            return this.name || this.topic || "Request";
+            return this.name || this.topic || "request";
         }
     });
 </script>
@@ -384,7 +384,7 @@
             }
         },
         label: function () {
-            return this.name || "Response";
+            return this.name || "response";
         }
     });
 </script>

@@ -2,19 +2,7 @@ module.exports = function (RED) {
     "use strict";
     const { ServiceBroker } = require('moleculer')
     let brokers = {}
-    //console.log(RED);
-    /*
-        'type-registered': [Function],
-          'node-status': [Function: handleStatusEvent],
-          'runtime-event': [Function: handleRuntimeEvent],
-          comms: [Function: handleCommsEvent],
-          'event-log'
-    */
-    // RED.events.on('node-status', console.log.bind(null, 'status'))
-    // RED.events.on('runtime-event', console.log.bind(null, 'runtime'))
-    // RED.events.on('event-log', console.log.bind(null, 'log'))
-    // RED.events.on('type-registered', console.log.bind(null, 'reg'))
-    // RED.events.on('nodes-started', console.log.bind(null, 'nodes'))
+
     RED.events.on('nodes-stopped', async (event) => {
         for (let prop in brokers) {
             await brokers[prop]['broker'].stop()
@@ -41,7 +29,7 @@ module.exports = function (RED) {
     })
 
 
-    function MoleculerConfig(n) {
+    function MoleculerConfigNode(n) {
         RED.nodes.createNode(this, n);
         this.name = n.name;
         this.options = n.options;
@@ -59,15 +47,15 @@ module.exports = function (RED) {
         }
         brokers[node.name] = { broker: null, services: {}, options }
         brokers[node.name]['broker'] = new ServiceBroker(brokers[node.name]['options']);
-        node.on('close', async(done) => {
+        node.on('close', async (done) => {
             await brokers[node.name]['broker'].stop()
             done()
         })
     }
-    RED.nodes.registerType("moleculer-config", MoleculerConfig);
+    RED.nodes.registerType("moleculer-config", MoleculerConfigNode);
 
 
-    function MoleculerServiceConfig(n) {
+    function MoleculerServiceConfigNode(n) {
         RED.nodes.createNode(this, n);
         this.name = n.name;
         this.version = n.version;
@@ -79,9 +67,9 @@ module.exports = function (RED) {
             done()
         })
     }
-    RED.nodes.registerType("moleculer-service-config", MoleculerServiceConfig);
+    RED.nodes.registerType("moleculer-service-config", MoleculerServiceConfigNode);
 
-    function event(n) {
+    function eventNode(n) {
         RED.nodes.createNode(this, n);
         this.broker = RED.nodes.getNode(n.broker);
         this.service = RED.nodes.getNode(n.service);
@@ -91,9 +79,9 @@ module.exports = function (RED) {
         let node = this
         createEvent(node)
     }
-    RED.nodes.registerType("moleculer-event", event);
+    RED.nodes.registerType("moleculer-event", eventNode);
 
-    function emit(n) {
+    function emitNode(n) {
         RED.nodes.createNode(this, n);
         this.broker = RED.nodes.getNode(n.broker);
         this.name = n.name;
@@ -103,9 +91,9 @@ module.exports = function (RED) {
         var node = this
         createEmit(node);
     }
-    RED.nodes.registerType("moleculer-emit", emit);
+    RED.nodes.registerType("moleculer-emit", emitNode);
 
-    function call(n) {
+    function callNode(n) {
         RED.nodes.createNode(this, n);
         this.broker = RED.nodes.getNode(n.broker);
         this.name = n.name;
@@ -115,9 +103,9 @@ module.exports = function (RED) {
         var node = this
         createCall(node);
     }
-    RED.nodes.registerType("moleculer-call", call);
+    RED.nodes.registerType("moleculer-call", callNode);
 
-    function reqAction(n) {
+    function reqActionNode(n) {
         RED.nodes.createNode(this, n);
         this.broker = RED.nodes.getNode(n.broker);
         this.service = RED.nodes.getNode(n.service);
@@ -126,29 +114,41 @@ module.exports = function (RED) {
         var node = this
         createAction(node);
     }
-    RED.nodes.registerType("moleculer-request-action", reqAction);
+    RED.nodes.registerType("moleculer-request-action", reqActionNode);
 
-    function resAction(n) {
+    function resActionNode(n) {
         RED.nodes.createNode(this, n);
         this.name = n.name;
         this.topic = n.topic;
         var node = this
         responseAction(node);
     }
-    RED.nodes.registerType("moleculer-response-action", resAction);
+    RED.nodes.registerType("moleculer-response-action", resActionNode);
 
     function getBroker(config) {
-        if (brokers[config.name] !== undefined) {
-            return brokers[config.name]
+        if (config && config['name'] !== undefined) {
+            if (brokers[config.name] !== undefined) {
+                return brokers[config.name]
+            } else {
+                brokers[config.name] = { broker: null, services: {}, options: RED.util.evaluateNodeProperty(config.options, config.optionsType, config) }
+                return brokers[config.name]
+            }
         } else {
-            brokers[config.name] = { broker: null, services: {}, options: RED.util.evaluateNodeProperty(config.options, config.optionsType, config) }
-            return brokers[config.name]
+            throw new Error('Missing Broker Config')
+        }
+    }
+
+    function getService(node) {
+        if (node) {
+            return node.version + '.' + node.name
+        } else {
+            throw new Error('Missing Service Config')
         }
     }
 
     function createEvent(node) {
         let broker = getBroker(node.broker)
-        let serviceName = node.service.version + '.' + node.service.name
+        let serviceName = getService(node.service)
         if (!broker['services'].hasOwnProperty(serviceName)) {
             broker['services'][serviceName] = {}
         }
@@ -174,7 +174,7 @@ module.exports = function (RED) {
                 node.send(msg)
             }
         }
-        if(node.group !== ""){
+        if (node.group !== "") {
             broker['services'][serviceName]['events'][node.topic]['group'] = node.group.split(',')
         }
     }
@@ -183,7 +183,7 @@ module.exports = function (RED) {
         let broker = getBroker(node.broker)
         node.on('input', (msg) => {
 
-            let topic = msg.topic || node.topic
+            let topic = msg.topic || node.topic || null
             let group = msg.group || node.group
             let bcast = msg.broadcast || node.broadcast
 
@@ -197,10 +197,13 @@ module.exports = function (RED) {
             if (group !== "") {
                 groups = group.split(',')
             }
-
-            node.status({ fill: 'blue', shape: 'dot', text: status })
-            broker['broker'][func](topic, msg.payload, groups)
-            setTimeout(() => { node.status({}) }, 500)
+            if (topic) {
+                node.status({ fill: 'blue', shape: 'dot', text: status })
+                broker['broker'][func](topic, msg.payload, groups)
+                setTimeout(() => { node.status({}) }, 500)
+            } else {
+                node.error('Missing topic, please send topic on msg.topic or Node Topic.', msg)
+            }
         })
     }
 
@@ -222,14 +225,18 @@ module.exports = function (RED) {
                         }
                     }
                 }
-                node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
-                let res = await broker['broker'].call(action, msg.payload, options)
-                msg.payload = res
-                setTimeout(() => { node.status({}) }, 500)
-                node.send(msg)
+                if (action !== "") {
+                    node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
+                    let res = await broker['broker'].call(action, msg.payload, options)
+                    msg.payload = res
+                    setTimeout(() => { node.status({}) }, 500)
+                    node.send(msg)
+                } else {
+                    node.error('Missing action, please send action on msg.action or Node Action.', msg)
+                }
             } catch (e) {
                 node.status({ fill: 'red', shape: 'ring', text: 'error' })
-                node.error(e)
+                node.error(e, msg)
                 setTimeout(() => { node.status({}) }, 500)
             }
         })
@@ -237,7 +244,7 @@ module.exports = function (RED) {
 
     function createAction(node) {
         let broker = getBroker(node.broker)
-        let serviceName = node.service.version + '.' + node.service.name
+        let serviceName = getService(node.service)
         if (!broker['services'].hasOwnProperty(serviceName)) {
             broker['services'][serviceName] = {}
         }
@@ -260,7 +267,14 @@ module.exports = function (RED) {
             return new Promise((resolve, reject) => {
                 node.status({ fill: 'blue', shape: 'dot', text: 'receiving request...' })
                 setTimeout(() => { node.status({}) }, 500)
-                let msg = { action: node.topic, payload: ctx.params, _res: { resolve, reject } }
+                let msg = {
+                    action: node.topic,
+                    payload: ctx.params,
+                    _res: { resolve, reject },
+                    emit: ctx.emit.bind(ctx),
+                    broadcast: ctx.broadcast.bind(ctx),
+                    call: ctx.call.bind(ctx)
+                }
                 node.send(msg)
             })
         }
