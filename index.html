@@ -402,3 +402,61 @@
     <p>Name: Name of Node</p>
     <p>This node send response from the service request.</p>
 </script>
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-apigw', {
+        category: 'Moleculer',
+        outputs: 0,
+        inputs: 0,
+        color: "#ffffff",
+        icon: "moleculer_big.png",
+        paletteLabel: "api-gw",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            service: {
+                value: "",
+                type: "moleculer-service-config"
+            },
+            name: {
+                value: ""
+            },
+            path: {
+                value: "/api"
+            }
+        },
+        label: function () {
+            return this.name || "apigw";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="moleculer-apigw">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"><i class="fa fa-globe"></i> Service</label>
+        <input type="text" id="node-input-service" placeholder="Service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-path"><i class="fa fa-tag"></i> Path</label>
+        <input type="text" id="node-input-path" placeholder="Path">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-apigw">
+    <p>Moleculer APIGW</p>
+    <h3>Details</h3>
+    <p>Broker: Name of Broker</p>
+    <p>Service: Name of Service. Remember define settings on service to configure APIGW.</p>
+    <p>Name: Name of Node. </p>
+</script>

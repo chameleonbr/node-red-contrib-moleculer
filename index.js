@@ -14,14 +14,28 @@ module.exports = function (RED) {
             for (let i in brokers) {
                 for (let j in brokers[i]['services']) {
                     let service = {
-                        name: brokers[i]['services'][j]['name'],
-                        events: brokers[i]['services'][j]['events'],
-                        actions: brokers[i]['services'][j]['actions']
+                        name: brokers[i]['services'][j]['name']
                     }
                     if (brokers[i]['services'][j]['version'] !== "") {
                         service['version'] = brokers[i]['services'][j]['version']
                     }
-                    brokers[i]['broker'].createService(service);
+                    if (brokers[i]['services'][j]['events'] !== undefined) {
+                        service['events'] = brokers[i]['services'][j]['events']
+                    }
+                    if (brokers[i]['services'][j]['actions'] !== undefined) {
+                        service['actions'] = brokers[i]['services'][j]['actions']
+                    }
+                    if (brokers[i]['services'][j]['mixins'] !== undefined) {
+                        service['mixins'] = brokers[i]['services'][j]['mixins']
+                    }
+                    if (brokers[i]['services'][j]['settings'] !== undefined) {
+                        service['settings'] = brokers[i]['services'][j]['settings']
+                    }
+                    let svc = brokers[i]['broker'].createService(service);
+
+                    if (brokers[i]['services'][j]['path'] !== undefined && svc.express !== undefined) {
+                        RED.httpNode.use(brokers[i]['services'][j]['path'], svc.express());
+                    }
                 }
                 await brokers[i]['broker'].start()
             }
@@ -124,6 +138,18 @@ module.exports = function (RED) {
         responseAction(node);
     }
     RED.nodes.registerType("moleculer-response-action", resActionNode);
+
+
+    function apigwNode(n) {
+        RED.nodes.createNode(this, n);
+        this.broker = RED.nodes.getNode(n.broker);
+        this.service = RED.nodes.getNode(n.service);
+        this.name = n.name;
+        this.path = n.path;
+        var node = this;
+        createApigw(node);
+    }
+    RED.nodes.registerType("moleculer-apigw", apigwNode);
 
     function getBroker(config) {
         if (config && config['name'] !== undefined) {
@@ -290,6 +316,29 @@ module.exports = function (RED) {
                 node.error('Request Action required', msg)
             }
         })
+    }
+
+    function createApigw(node) {
+        let ApiGatewayService = require("moleculer-web")
+        let broker = getBroker(node.broker)
+        let serviceName = getService(node.service)
+        if (!broker['services'].hasOwnProperty(serviceName)) {
+            broker['services'][serviceName] = {}
+        }
+        broker['services'][serviceName]['name'] = node.service.name
+        broker['services'][serviceName]['version'] = node.service.version
+        try {
+            if (node.service.settingsType) {
+                broker['services'][serviceName]['settings'] = RED.util.evaluateNodeProperty(node.service.settings, node.service.settingsType, node)
+            } else {
+                broker['services'][serviceName]['settings'] = JSON.parse(node.service.settings)
+            }
+        } catch (e) {
+            broker['services'][serviceName]['settings'] = {}
+        }
+        broker['services'][serviceName]['mixins'] = ApiGatewayService
+        broker['services'][serviceName]['settings']['server'] = false
+        broker['services'][serviceName]['path'] = node.path || '/'
     }
 
 };

@@ -28,7 +28,8 @@
   },
   "homepage": "https://github.com/chameleonbr/node-red-contrib-moleculer#readme",
   "dependencies": {
-    "moleculer": "^0.13.9"
+    "moleculer": "^0.13.9",
+    "moleculer-web": "^0.8.5"
   },
   "optionalDependencies": {
     "ioredis": "^4.14.0",
