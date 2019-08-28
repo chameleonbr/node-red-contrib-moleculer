@@ -5,6 +5,7 @@ Node Red client for Moleculer with events, emit, call, request and response supp
 
 On ~/.node-red folder:
 ```npm install node-red-contrib-moleculer```
+
 ```npm install ioredis``` or ```npm install nats``` // to activate transporter config.
 
 Please test and make feedback.
