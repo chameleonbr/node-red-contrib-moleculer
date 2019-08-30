@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/chameleonbr/node-red-contrib-moleculer#readme",
   "dependencies": {
+    "express-dynamic-middleware": "^1.0.0",
     "moleculer": "^0.13.9",
     "moleculer-web": "^0.8.5"
   },

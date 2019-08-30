@@ -2,8 +2,12 @@ module.exports = function (RED) {
     "use strict";
     const { ServiceBroker } = require('moleculer')
     let brokers = {}
+    let dynamicMiddleware = require('express-dynamic-middleware').create()
+
+    RED.httpNode.use(dynamicMiddleware.handle())
 
     RED.events.on('nodes-stopped', async (event) => {
+        dynamicMiddleware.clean()
         for (let prop in brokers) {
             await brokers[prop]['broker'].stop()
         }
@@ -32,9 +36,8 @@ module.exports = function (RED) {
                         service['settings'] = brokers[i]['services'][j]['settings']
                     }
                     let svc = brokers[i]['broker'].createService(service);
-
-                    if (brokers[i]['services'][j]['path'] !== undefined && svc.express !== undefined) {
-                        RED.httpNode.use(brokers[i]['services'][j]['path'], svc.express());
+                    if (brokers[i]['services'][j]['apigw'] !== undefined && svc.express !== undefined) {
+                        dynamicMiddleware.use(svc.express())
                     }
                 }
                 await brokers[i]['broker'].start()
@@ -67,7 +70,6 @@ module.exports = function (RED) {
         })
     }
     RED.nodes.registerType("moleculer-config", MoleculerConfigNode);
-
 
     function MoleculerServiceConfigNode(n) {
         RED.nodes.createNode(this, n);
@@ -125,6 +127,7 @@ module.exports = function (RED) {
         this.service = RED.nodes.getNode(n.service);
         this.name = n.name;
         this.topic = n.topic;
+        this.params = n.params;
         var node = this
         createAction(node);
     }
@@ -196,7 +199,7 @@ module.exports = function (RED) {
             handler: (payload, sender, event) => {
                 let msg = { topic: node.topic, payload, sender, event }
                 node.status({ fill: 'blue', shape: 'dot', text: 'receiving event...' })
-                setTimeout(() => { node.status({}) }, 500)
+                setTimeout(() => { node.status({}) }, 200)
                 node.send(msg)
             }
         }
@@ -226,7 +229,7 @@ module.exports = function (RED) {
             if (topic) {
                 node.status({ fill: 'blue', shape: 'dot', text: status })
                 broker['broker'][func](topic, msg.payload, groups)
-                setTimeout(() => { node.status({}) }, 500)
+                setTimeout(() => { node.status({}) }, 200)
             } else {
                 node.error('Missing topic, please send topic on msg.topic or Node Topic.', msg)
             }
@@ -255,7 +258,7 @@ module.exports = function (RED) {
                     node.status({ fill: 'blue', shape: 'dot', text: 'requesting...' })
                     let res = await broker['broker'].call(action, msg.payload, options)
                     msg.payload = res
-                    setTimeout(() => { node.status({}) }, 500)
+                    setTimeout(() => { node.status({}) }, 200)
                     node.send(msg)
                 } else {
                     node.error('Missing action, please send action on msg.action or Node Action.', msg)
@@ -263,7 +266,7 @@ module.exports = function (RED) {
             } catch (e) {
                 node.status({ fill: 'red', shape: 'ring', text: 'error' })
                 node.error(e, msg)
-                setTimeout(() => { node.status({}) }, 500)
+                setTimeout(() => { node.status({}) }, 200)
             }
         })
     }
@@ -289,10 +292,26 @@ module.exports = function (RED) {
         if (!broker['services'][serviceName].hasOwnProperty('actions')) {
             broker['services'][serviceName]['actions'] = {}
         }
-        broker['services'][serviceName]['actions'][node.topic] = (ctx) => {
+
+        broker['services'][serviceName]['actions'][node.topic] = {}
+        
+        if (node.params && node.params !== "{}") {
+            let params = null
+            try {
+                params = JSON.parse(node.params)
+            } catch (e) {
+                params = null
+            }
+
+            if (params) {
+                broker['services'][serviceName]['actions'][node.topic]['params'] = params
+            }
+        }
+
+        broker['services'][serviceName]['actions'][node.topic]['handler'] = async function (ctx) {
             return new Promise((resolve, reject) => {
                 node.status({ fill: 'blue', shape: 'dot', text: 'receiving request...' })
-                setTimeout(() => { node.status({}) }, 500)
+                setTimeout(() => { node.status({}) }, 200)
                 let msg = {
                     action: node.topic,
                     payload: ctx.params,
@@ -309,7 +328,7 @@ module.exports = function (RED) {
     function responseAction(node) {
         node.on('input', (msg) => {
             node.status({ fill: 'blue', shape: 'dot', text: 'sending response...' })
-            setTimeout(() => { node.status({}) }, 500)
+            setTimeout(() => { node.status({}) }, 200)
             if (msg._res !== undefined) {
                 msg._res.resolve(msg.payload)
             } else {
@@ -338,7 +357,8 @@ module.exports = function (RED) {
         }
         broker['services'][serviceName]['mixins'] = ApiGatewayService
         broker['services'][serviceName]['settings']['server'] = false
-        broker['services'][serviceName]['path'] = node.path || '/'
+        broker['services'][serviceName]['settings']['middleware'] = true
+        broker['services'][serviceName]['apigw'] = true
     }
 
 };

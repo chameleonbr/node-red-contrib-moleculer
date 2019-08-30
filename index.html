@@ -331,10 +331,23 @@
             topic: {
                 value: "",
                 required: true
+            },
+            params: {
+                value: "{}"
+            },
+            paramsType: {
+                value: "json"
             }
         },
         label: function () {
             return this.name || this.topic || "request";
+        },
+        oneditprepare: function () {
+            $("#node-input-params").typedInput({
+                default: 'json',
+                typeField: $("#node-input-paramsType"),
+                types: ['flow', 'global', 'json']
+            });
         }
     });
 </script>
@@ -355,6 +368,11 @@
     <div class="form-row">
         <label for="node-input-topic"><i class="icon-tasks"></i> Action</label>
         <input type="text" id="node-input-topic" placeholder="Action">
+    </div>
+    <div class="form-row">
+        <label for="node-input-params"><i class="icon-tasks"></i> Parameters</label>
+        <input type="text" id="node-input-params">
+        <input type="hidden" id="node-input-paramsType">
     </div>
 </script>
 
@@ -423,9 +441,6 @@
             },
             name: {
                 value: ""
-            },
-            path: {
-                value: "/api"
             }
         },
         label: function () {
@@ -444,12 +459,11 @@
         <input type="text" id="node-input-service" placeholder="Service">
     </div>
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <b>Remember to use Service settings to configure APIGW.</b>
     </div>
     <div class="form-row">
-        <label for="node-input-path"><i class="fa fa-tag"></i> Path</label>
-        <input type="text" id="node-input-path" placeholder="Path">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
 
@@ -457,6 +471,6 @@
     <p>Moleculer APIGW</p>
     <h3>Details</h3>
     <p>Broker: Name of Broker</p>
-    <p>Service: Name of Service. Remember define settings on service to configure APIGW.</p>
-    <p>Name: Name of Node. </p>
+    <p>Service: Name of Service. Remember to use Service settings to configure Moleculer API Gateway.</p>
+    <p>Name: Name of Node.</p>
 </script>
