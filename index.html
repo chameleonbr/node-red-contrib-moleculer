@@ -12,7 +12,8 @@
                 value: "{}",
                 validate: RED.validators.typedInput("optionsType"),
                 required: true
-            }
+            },
+            optionsType: { value: "json" },
         },
         label: function () {
             return this.name || 'Config'
@@ -64,7 +65,8 @@
                 value: "{}",
                 validate: RED.validators.typedInput("settingsType"),
                 required: false
-            }
+            },
+            settingsType: { value: "json" },
         },
         label: function () {
             return (this.version !== "") ? (this.version + '.' + this.name) : (this.name)
@@ -263,7 +265,8 @@
                 value: "{}",
                 validate: RED.validators.typedInput("optionsType"),
                 required: false
-            }
+            },
+            optionsType: { value: "json" },
         },
         label: function () {
             return this.name || this.topic || "call";
