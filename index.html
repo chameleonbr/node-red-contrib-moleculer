@@ -477,3 +477,66 @@
     <p>Service: Name of Service. Remember to use Service settings to configure Moleculer API Gateway.</p>
     <p>Name: Name of Node.</p>
 </script>
+
+
+<script type="text/javascript">
+    /*global RED*/
+    RED.nodes.registerType('moleculer-instance', {
+        category: 'Moleculer',
+        inputs: 0,
+        outputs: 0,
+        color: "#ffffff",
+        icon: "moleculer_big.png",
+        paletteLabel: "instance",
+        defaults: {
+            broker: {
+                value: "",
+                type: "moleculer-config"
+            },
+            name: {
+                value: ""
+            },
+            topic: {
+                value: "mol",
+                required: true
+            },
+            location: {
+                value: "flow",
+                required: true
+            }
+        },
+        label: function () {
+            return this.name || this.topic || "instance";
+        }
+    });
+</script>
+
+
+<script type="text/x-red" data-template-name="moleculer-instance">
+    <div class="form-row">
+        <label for="node-input-broker"><i class="fa fa-globe"></i> Broker</label>
+        <input type="text" id="node-input-broker" placeholder="Broker">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic"><i class="icon-tasks"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-location"><i class="fa fa-unlock"></i> Context</label>
+        <select id="node-input-location">
+            <option value="flow" selected>Flow</option>
+            <option value="global">Global</option>
+        </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="moleculer-instance">
+    <p>Moleculer Instance</p>
+    <p>Injects a Moleculer instance on flow or global context.</p> 
+    <p>The Topic is the var name of Moleculer Instance.</p>
+    <p></p>
+</script>

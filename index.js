@@ -164,6 +164,24 @@ module.exports = function (RED) {
   }
   RED.nodes.registerType("moleculer-apigw", apigwNode);
 
+  function MoleculerInstance(n) {
+    RED.nodes.createNode(this, n);
+    this.broker = RED.nodes.getNode(n.broker);
+    this.location = n.location;
+    this.name = n.name;
+    this.topic = n.topic;
+    var node = this;
+    let client = getBroker(node.broker)['broker'];
+    this.context()[node.location].set(node.topic, client);
+
+    node.on("close", function (done) {
+      node.status({});
+      this.context()[node.location].set(node.topic, null);
+      done();
+    });
+  }
+  RED.nodes.registerType("moleculer-instance", MoleculerInstance);
+
   function getBroker(config) {
     if (config && config["name"] !== undefined) {
       if (brokers[config.name] !== undefined) {
@@ -399,7 +417,7 @@ module.exports = function (RED) {
             emit: ctx.emit.bind(ctx),
             broadcast: ctx.broadcast.bind(ctx),
             call: ctx.call.bind(ctx),
-            meta: ctx.meta || null
+            meta: ctx.meta || null,
           };
           node.send(msg);
         });
