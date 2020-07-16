@@ -399,6 +399,7 @@ module.exports = function (RED) {
             emit: ctx.emit.bind(ctx),
             broadcast: ctx.broadcast.bind(ctx),
             call: ctx.call.bind(ctx),
+            meta: ctx.meta || null
           };
           node.send(msg);
         });
