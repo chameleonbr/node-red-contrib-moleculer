@@ -35,6 +35,13 @@ module.exports = function (RED) {
           if (brokers[i]["services"][j]["settings"] !== undefined) {
             service["settings"] = brokers[i]["services"][j]["settings"];
           }
+
+          service["settings"]['onError'] = (req, res, err) => {
+              res.status(err.code || 500);
+              res.send(err);
+              res.end();
+          };
+
           let svc = brokers[i]["broker"].createService(service);
           if (
             brokers[i]["services"][j]["apigw"] !== undefined &&
@@ -83,6 +90,7 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, n);
     this.name = n.name;
     this.version = n.version;
+    this.rest = n.rest;
     this.settingsType = n.settingsType;
     this.settings = n.settings;
 
@@ -138,6 +146,8 @@ module.exports = function (RED) {
     this.service = RED.nodes.getNode(n.service);
     this.name = n.name;
     this.topic = n.topic;
+    this.rest = n.rest;
+    this.restType = n.restType;
     this.params = n.params;
     var node = this;
     createAction(node);
@@ -267,7 +277,10 @@ module.exports = function (RED) {
   function createEmit(node) {
     try {
       let broker = getBroker(node.broker);
-      node.on("input", (msg) => {
+      node.on("input", (msg, send, done) => {
+        send = send || function() { node.send.apply(node,arguments) }
+        done = done || function(e) { if(e){node.error(e, msg)}; }
+        
         let topic = msg.topic || node.topic || null;
         let group = msg.group || node.group;
         let bcast = msg.broadcast || node.broadcast;
@@ -288,11 +301,9 @@ module.exports = function (RED) {
           setTimeout(() => {
             node.status({});
           }, 200);
+          done();
         } else {
-          node.error(
-            "Missing topic, please send topic on msg.topic or Node Topic.",
-            msg
-          );
+          done(new Error("Missing topic, please send topic on msg.topic or Node Topic."));
         }
       });
     } catch (err) {
@@ -303,7 +314,10 @@ module.exports = function (RED) {
   function createCall(node) {
     try {
       let broker = getBroker(node.broker);
-      node.on("input", async (msg) => {
+      node.on("input", async (msg, send, done)=>{
+        send = send || function() { node.send.apply(node,arguments) }
+        done = done || function(e) { if(e){node.error(e, msg)}; }
+
         try {
           let action = msg.action || node.topic;
           let options = msg.options || {};
@@ -330,16 +344,16 @@ module.exports = function (RED) {
             setTimeout(() => {
               node.status({});
             }, 200);
-            node.send(msg);
+            send(msg);
+            done();
           } else {
-            node.error(
-              "Missing action, please send action on msg.action or Node Action.",
-              msg
-            );
+            done(new Error("Missing action, please send action on msg.action or Node Action."));
           }
         } catch (e) {
           node.status({ fill: "red", shape: "ring", text: "error" });
-          node.error(e, msg);
+          msg.payload = e.message;
+          msg.data = e.data;
+          done(e);
           setTimeout(() => {
             node.status({});
           }, 200);
@@ -376,12 +390,34 @@ module.exports = function (RED) {
       } catch (e) {
         broker["services"][serviceName]["settings"] = {};
       }
+      if(node.service.rest){
+        broker["services"][serviceName]["settings"]['rest'] = node.service.rest;
+      }
 
       if (!broker["services"][serviceName].hasOwnProperty("actions")) {
         broker["services"][serviceName]["actions"] = {};
       }
 
       broker["services"][serviceName]["actions"][node.topic] = {};
+
+      if (node.rest && node.rest !== "{}" && node.rest !== "") {
+        let rest = null;
+        try {
+          rest = RED.util.evaluateNodeProperty(
+            node.rest,
+            node.restType,
+            node
+          );
+        } catch (e) {
+          rest = null;
+        }
+
+        if (rest) {
+          broker["services"][serviceName]["actions"][node.topic][
+            "rest"
+          ] = rest;
+        }
+      }
 
       if (node.params && node.params !== "{}") {
         let params = null;
@@ -428,15 +464,18 @@ module.exports = function (RED) {
   }
 
   function responseAction(node) {
-    node.on("input", (msg) => {
+    node.on("input", (msg, send, done) => {
+      send = send || function() { node.send.apply(node,arguments) }
+      done = done || function(e) { if(e){node.error(e, msg)}; }
       node.status({ fill: "blue", shape: "dot", text: "sending response..." });
       setTimeout(() => {
         node.status({});
       }, 200);
       if (msg._res !== undefined) {
         msg._res.resolve(msg.payload);
+        done();
       } else {
-        node.error("Request Action required", msg);
+        done(new Error("Missing action, please send action on msg.action or Node Action."));
       }
     });
   }

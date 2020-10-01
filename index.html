@@ -66,6 +66,10 @@
                 validate: RED.validators.typedInput("settingsType"),
                 required: false
             },
+            rest: {
+                value: "",
+                required: false
+            },
             settingsType: { value: "json" },
         },
         label: function () {
@@ -89,6 +93,10 @@
 <div class="form-row">
     <label for="node-config-input-version"><i class="fa fa-globe"></i> Version</label>
     <input type="text" id="node-config-input-version">
+</div>
+<div class="form-row">
+    <label for="node-config-input-rest"><i class="fa fa-random"></i> REST</label>
+    <input type="text" id="node-config-input-rest" placeholder="my_service/">
 </div>
 <div class="form-row">
     <label for="node-config-input-settings"><i class="fa fa-server"></i> Settings</label>
@@ -335,8 +343,17 @@
                 value: "",
                 required: true
             },
+            rest: {
+                value: "",
+                required: false,
+                validate: RED.validators.typedInput("restType"),
+            },
+            restType: {
+                value: "str"
+            },
             params: {
-                value: "{}"
+                value: "{}",
+                validate: RED.validators.typedInput("paramsType"),
             },
             paramsType: {
                 value: "json"
@@ -350,6 +367,12 @@
                 default: 'json',
                 typeField: "#node-input-paramsType",
                 types: ['flow', 'global', 'json']
+            });
+
+            $("#node-input-rest").typedInput({
+                default: 'str',
+                typeField: "#node-input-restType",
+                types: ['str', 'json']
             });
         }
     });
@@ -371,6 +394,11 @@
     <div class="form-row">
         <label for="node-input-topic"><i class="icon-tasks"></i> Action</label>
         <input type="text" id="node-input-topic" placeholder="Action">
+    </div>
+    <div class="form-row">
+        <label for="node-input-rest"><i class="fa fa-random"></i> REST</label>
+        <input type="text" id="node-input-rest">
+        <input type="hidden" id="node-input-restType">
     </div>
     <div class="form-row">
         <label for="node-input-params"><i class="icon-tasks"></i> Parameters</label>
