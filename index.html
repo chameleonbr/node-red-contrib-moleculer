@@ -143,7 +143,8 @@
             }
         },
         label: function () {
-            return this.name || this.topic || "event";
+            let lab = this.name || this.topic || null
+            return (lab)?(`ev: ${lab}`):('event');
         }
     });
 </script>
@@ -210,7 +211,8 @@
             }
         },
         label: function () {
-            return this.name || this.topic || ((this.broadcast) ? ('broadcast') : ('emit'));
+            let type = ((this.broadcast) ? ('bcast') : ('emit'));
+            return `${type}: ${this.topic}`;
         }
     });
 </script>

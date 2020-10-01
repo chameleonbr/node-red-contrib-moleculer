@@ -1,6 +1,7 @@
 module.exports = function (RED) {
   "use strict";
-  const { ServiceBroker } = require("moleculer");
+  const { ServiceBroker,  } = require("moleculer");
+  const { MoleculerError, MoleculerRetryableError, ValidationError } = require("moleculer").Errors;
   let brokers = {};
   let dynamicMiddleware = require("express-dynamic-middleware").create();
 
@@ -454,6 +455,7 @@ module.exports = function (RED) {
             broadcast: ctx.broadcast.bind(ctx),
             call: ctx.call.bind(ctx),
             meta: ctx.meta || null,
+            Errors: { MoleculerError, MoleculerRetryableError, ValidationError }
           };
           node.send(msg);
         });
@@ -472,8 +474,13 @@ module.exports = function (RED) {
         node.status({});
       }, 200);
       if (msg._res !== undefined) {
-        msg._res.resolve(msg.payload);
-        done();
+        if(msg.payload instanceof Error){
+          msg._res.reject(msg.payload);
+          done(msg.payload);
+        }else{
+          msg._res.resolve(msg.payload);
+          done();
+        }
       } else {
         done(new Error("Missing action, please send action on msg.action or Node Action."));
       }
